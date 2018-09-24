@@ -1,18 +1,24 @@
+//Boris Kim's Pointer Based Binary Search Tree.
 #include <iostream>
 #include <cstdlib>
 
 using namespace std;
 
+//Class Declaration for Binary Search Tree.
 class BinarySearchTree
 {
 	private:
-		
+	
+	//Copy constructor and assignment operators declared in private.	
 	BinarySearchTree(const BinarySearchTree& other) {}
 	BinarySearchTree& operator=(const BinarySearchTree& other) {}
 	
+	//Variable declarations of the root node and size.
 	Node* root_;
 	unsigned int size_;
-		
+	
+	
+	//private function to get depth of tree. Implemented recursively.
 	int getNodeDepth(Node* n) const
 	{
 		if(n->left == NULL && n->right == NULL)
@@ -31,6 +37,7 @@ class BinarySearchTree
 	
 	typedef int DataType;
 	
+	//Node object declaration.
 	struct Node
 	{
 		DataType val;  // value of the node
@@ -44,13 +51,16 @@ class BinarySearchTree
 			right = NULL;
 		}
 	};
-		
+	
+	
+	//Default constructor. Initializes tree to size 0 and root pointing to NULL.
 	BinarySearchTree()
 	{
 		root_ = NULL;
 		size_ = 0;
 	}
 	
+	//Destructor to prevent memory leaks.
 	~BinarySearchTree()
 	{
 		if(root_ == NULL)
@@ -62,13 +72,16 @@ class BinarySearchTree
 		delete root_;
 	}
 	
+	//Insert mutator.
 	bool insert(DataType val)
 	{
+		//Returns false if value inserted already exists.
 		if(exists(val))
 			return false;
 	
 		Node* newNode = new Node(val);
-	
+		
+		//If tree is empty, assigns new value to root.
 		if(size_ == 0)
 		{
 			root_ = newNode;
@@ -79,7 +92,8 @@ class BinarySearchTree
 		size_++;
 	
 		Node* temp = root_;
-	
+		
+		//Traverses through tree to find the appropriate spot for insertion.
 		while(temp->left != NULL || temp->right != NULL)
 		{
 			if(temp->val > val && temp->left != NULL)
@@ -89,7 +103,8 @@ class BinarySearchTree
 			else
 				break;
 		}
-	
+		
+		//Compares itself with parent node to see if it goes to the right or left.
 		if(temp->val > val)
 			temp->left = newNode;
 		else
@@ -98,20 +113,25 @@ class BinarySearchTree
 		return true;
 	}
 	
+	//Remove mutator.
 	bool remove(DataType val)
 	{
+		//Returns false if empty, or the value removed does not exist.
 		if(!exists(val) || size_ == 0)
 			return false;
 	
 		Node* deleteNode = root_;
-	
+		
+		//Remove case where the value removed is the root node.
 		if(deleteNode->val == val)
 		{
+			//Removes root if it is the only node in tree.
 			if(size_ == 1)
 			{
 				delete root_;
 				root_ = NULL;
 			}
+			//If root only has one child, re-assigns new root to the existing child.
 			else if(deleteNode->left == NULL || deleteNode->right == NULL)
 			{
 				if(deleteNode->left == NULL)
@@ -121,10 +141,13 @@ class BinarySearchTree
 	
 				delete deleteNode;
 			}
+			//If both children exist.
 			else
 			{
+				//Assigns temporary value to the root's right child.
 				Node* temp = deleteNode->right;
-	
+				
+				//If temp's left child does not exist, shifts right child up as the new root.
 				if(temp->left == NULL)
 				{
 					deleteNode->val = temp->val;
@@ -132,6 +155,7 @@ class BinarySearchTree
 	
 					delete temp;
 				}
+				//If temp has a left child, pushes left most leaf up as new root.
 				else
 				{
 					while(temp->left->left != NULL)
@@ -145,17 +169,18 @@ class BinarySearchTree
 			size_--;
 			return true;
 		}
+		//If the value to be deleted is not the root.
 		else
 		{
 			Node* parent = deleteNode;
 	
 			bool left;
-	
+			
 			if(val > parent->val)
 				left = false;
 			else
 				left = true;
-	
+			//Searches for the parent node of the node to be deleted.
 			while((parent->left != NULL && parent->left->val != val) || (parent->right != NULL && parent->right->val != val))
 			{
 				if(val > parent->val && parent->right != NULL && val != parent->right->val)
@@ -165,7 +190,8 @@ class BinarySearchTree
 				else
 					break;
 			}
-	
+		
+		//Determines if the node to be deleted is greater than or less than parent node.
 		if(val < parent->val)
 		{
 			deleteNode = parent->left;
@@ -176,7 +202,8 @@ class BinarySearchTree
 			deleteNode = parent->right;
 			left = false;
 		}
-	
+		
+		//If node being deleted is a leaf node, it is just deleted.
 		if(deleteNode->left == NULL && deleteNode->right == NULL)
 		{
 			delete deleteNode;
@@ -186,6 +213,7 @@ class BinarySearchTree
 			else
 				parent->right = NULL;
 		}
+		//If deleted node has one child, its parent is connected with the child, then deleted.
 		else if(deleteNode->left == NULL || deleteNode->right == NULL)
 		{
 			if(left)
@@ -204,10 +232,12 @@ class BinarySearchTree
 			}
 			delete deleteNode;
 		}
+		//If both children exist.
 		else
 		{
 			Node* temp = deleteNode->right;
-	
+			
+			//If the right child of the deleted node has no subtree, the deleted node is replaced by it's right child.
 			if(temp->left == NULL)
 			{
 				deleteNode->val = temp->val;
@@ -215,6 +245,7 @@ class BinarySearchTree
 	
 				delete temp;
 			}
+			//If the right child has a subtree, the left most leaf of the subtree replaces the deleted node.
 			else
 			{
 				while(temp->left->left != NULL)
@@ -230,6 +261,7 @@ class BinarySearchTree
 		}
 	}
 	
+	//Accessor for finding if a node exists within the tree.
 	bool exists(DataType val) const
 	{
 		if(size_ == 0)
@@ -253,6 +285,7 @@ class BinarySearchTree
 			return false;
 	}
 	
+	//Accessor that returns the smallest value in the tree i.e. the left most leaf.
 	DataType min() const
 	{
 		Node* temp = root_;
@@ -263,6 +296,7 @@ class BinarySearchTree
 		return temp->val;
 	}
 	
+	//Accessor that returns the largest value in the tree i.e. the right most leaf.
 	DataType max() const
 	{
 		Node* temp = root_;
@@ -273,17 +307,15 @@ class BinarySearchTree
 		return temp->val;
 	}
 	
+	//Accessor that returns the size of the tree.
 	unsigned int size() const
 	{
 		return size_;
 	}
 	
+	//Accessor that returns the depth of the tree. Calls the private accessor getNodeDepth.
 	unsigned int depth() const
 	{
 		return getNodeDepth(root_);
-	}
-	
-	void print() const
-	{
 	}
 };
